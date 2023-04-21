@@ -27,7 +27,25 @@ internal static class Program {
 			var substring = GetSubstringWithSideVowels(changedLine);
 			Console.WriteLine(substring.Length > 0
 				? $"Подстрока, начинающаяся и заканчивающаяся на гласную: {substring}"
-				: $"Подстрока, начинающаяся и заканчивающаяся на гласную, не найдена");
+				: "Подстрока, начинающаяся и заканчивающаяся на гласную, не найдена");
+
+			Console.Write("Доступны следующие алгоритмы сортировок" +
+			              "\n1. Быстрая сортировка" +
+			              "\n2. Сортировка деревом" +
+			              "\nВыберите один: ");
+			var choice = Console.ReadLine();
+			if (choice is null || choice.Length == 0) {
+				Console.WriteLine("Вы ввели пустую строку");
+				return;
+			}
+
+			if (choice is not ("1" or "2")) {
+				Console.WriteLine("Неправильный ввод");
+				return;
+			}
+
+			var sortedChangedLine = choice == "1" ? Sort.QuickSort(changedLine) : Sort.TreeSort(changedLine);
+			Console.WriteLine($"Отсортированная строка: {sortedChangedLine}");
 		}
 	}
 
