@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Maxim_Technology_Practice;
 
@@ -13,13 +14,15 @@ internal static class Program {
 			Console.WriteLine("Вы неправильно ввели следующие символы: " + wrongSymbolsString);
 		}
 		else {
-			Console.WriteLine(LineAlgorithm(inputLine));
+			var changedLine = ChangeLine(inputLine);
+			Console.WriteLine($"Обработанная строка: {changedLine}");
+			Console.WriteLine($"Символы в обработанной строке:\n{CountCharactersIndividually(changedLine)}");
 		}
 	}
-    
-	private static string LineAlgorithm(string line) {
+
+	private static string ChangeLine(string line) {
 		string resultLine;
-		
+
 		if (line.Length % 2 == 0) {
 			var middleIndex = line.Length / 2;
 
@@ -31,7 +34,7 @@ internal static class Program {
 		else {
 			var reversedLine = ReverseString(line);
 
-			
+
 			resultLine = reversedLine + line;
 		}
 
@@ -39,4 +42,13 @@ internal static class Program {
 	}
 
 	private static string ReverseString(string s) => new(s.Reverse().ToArray());
+
+	private static string CountCharactersIndividually(string line) {
+		var orderedCharactersGroups = line
+			.GroupBy(ch => ch)
+			.Select(g => new { Char = g.Key, Сount = g.Count() })
+			.OrderBy(g => g.Char);
+		
+		return string.Join("\n", orderedCharactersGroups);
+	}
 }
