@@ -1,12 +1,15 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Maxim_Technology_Practice;
 
 internal static class Program {
 	public static void Main(string[] args) {
+		Console.Write("Введите строку: ");
 		var inputLine = Console.ReadLine();
-		if (inputLine is null) return;
+		if (inputLine is null || inputLine.Length == 0) {
+			Console.WriteLine("Вы ввели пустую строку");
+			return;
+		}
 
 		var wrongSymbols = Regex.Matches(inputLine, "[^a-z]");
 		if (wrongSymbols.Count > 0) {
@@ -16,7 +19,15 @@ internal static class Program {
 		else {
 			var changedLine = ChangeLine(inputLine);
 			Console.WriteLine($"Обработанная строка: {changedLine}");
-			Console.WriteLine($"Символы в обработанной строке:\n{CountCharactersIndividually(changedLine)}");
+
+			var characterCounts = GetStringWithCharacterCounts(changedLine);
+			Console.WriteLine($"Количество каждого из символов в обработанной строке:\n" +
+			                  $"{characterCounts}");
+
+			var substring = GetSubstringWithSideVowels(changedLine);
+			Console.WriteLine(substring.Length > 0
+				? $"Подстрока, начинающаяся и заканчивающаяся на гласную: {substring}"
+				: $"Подстрока, начинающаяся и заканчивающаяся на гласную, не найдена");
 		}
 	}
 
@@ -41,14 +52,18 @@ internal static class Program {
 		return resultLine;
 	}
 
-	private static string ReverseString(string s) => new(s.Reverse().ToArray());
+	private static string ReverseString(string s) =>
+		new(s.Reverse().ToArray());
 
-	private static string CountCharactersIndividually(string line) {
+	private static string GetStringWithCharacterCounts(string line) {
 		var orderedCharactersGroups = line
 			.GroupBy(ch => ch)
 			.Select(g => new { Char = g.Key, Сount = g.Count() })
 			.OrderBy(g => g.Char);
-		
+
 		return string.Join("\n", orderedCharactersGroups);
 	}
+
+	private static string GetSubstringWithSideVowels(string line) =>
+		Regex.Match(line, "[aeiouy]\\w*[aeiouy]").Value;
 }
