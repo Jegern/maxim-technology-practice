@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using Web_Maxim_Technology_Practice.Models;
 
 namespace Web_Maxim_Technology_Practice.Controllers;
@@ -7,7 +8,12 @@ namespace Web_Maxim_Technology_Practice.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class StringChangeController : ControllerBase {
+	private readonly StringChangeConfiguration _stringChangeConfiguration;
 	private static readonly StringChangeModel StringChangeModel = new();
+
+	public StringChangeController(IOptions<StringChangeConfiguration> configuration) {
+		_stringChangeConfiguration = configuration.Value;
+	}
 
 	[HttpGet("{inputLine}")]
 	public async Task<IActionResult> Input(string inputLine, [FromQuery] string sortNumber) {
@@ -15,6 +21,11 @@ public class StringChangeController : ControllerBase {
 		if (wrongSymbols.Count > 0) {
 			var wrongSymbolsString = string.Join(", ", wrongSymbols.Select(m => m.Value));
 			return BadRequest($"Вы неправильно ввели следующие символы: {wrongSymbolsString}");
+		}
+
+		if (_stringChangeConfiguration.Settings is { BlackList: not null } &&
+		    _stringChangeConfiguration.Settings.BlackList.Contains(inputLine)) {
+			return BadRequest($"Введенное слово находится в черном списке");
 		}
 
 		StringChangeModel.ChangedLine = ChangeLine(inputLine);
@@ -30,6 +41,11 @@ public class StringChangeController : ControllerBase {
 		StringChangeModel.TruncatedChangedLine = truncatedChangedLine;
 
 		return Ok(StringChangeModel);
+	}
+
+	[HttpPost]
+	public IActionResult Post() {
+		return Ok(_stringChangeConfiguration);
 	}
 
 	private static string ChangeLine(string line) {
@@ -72,8 +88,8 @@ public class StringChangeController : ControllerBase {
 	private static string GetSubstringWithSideVowels(string line) =>
 		Regex.Match(line, "[aeiouy]\\w*[aeiouy]").Value;
 
-	private static async Task<int> GetRandomNumber(int max) {
-		var baseUrl = $"http://www.randomnumberapi.com/api/v1.0/random?min={0}&max={max}&count=1";
+	private async Task<int> GetRandomNumber(int max) {
+		var baseUrl = $"{_stringChangeConfiguration.RandomApi}/random?min={0}&max={max}&count=1";
 		try {
 			using var client = new HttpClient();
 			using var responce = await client.GetAsync(baseUrl);
